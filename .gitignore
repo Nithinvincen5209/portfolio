@@ -1,0 +1,39 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# production
+build/
+dist/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# media source files: the real gameplay recordings are 28-61 MB each and are
+# hosted on YouTube (unlisted). Keeping the originals in git would bloat every
+# clone for no benefit, so they live outside the repo. public/media/ holds only
+# screenshots and poster frames, which are small enough to commit.
+assets/raw/

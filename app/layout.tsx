@@ -4,18 +4,33 @@ import { profile } from "@/data/projects";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+// Absolute URLs for canonical links, OG images and the sitemap all derive from
+// this. Set NEXT_PUBLIC_SITE_URL to the deployed origin (e.g. the .vercel.app
+// URL, or a custom domain) so shares and crawlers get correct absolute URLs.
+// It falls back to localhost so a local dev build never emits a link to a host
+// that does not belong to this project.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nithinvincent.dev"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: `${profile.name} — ${profile.role}`,
     template: `%s — ${profile.name}`,
   },
   description: profile.tagline,
+  alternates: { canonical: "/" },
   openGraph: {
     title: `${profile.name} — ${profile.role}`,
     description: profile.tagline,
-    type: "website",
+    url: siteUrl,
     siteName: profile.name,
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${profile.name} — ${profile.role}`,
+    description: profile.tagline,
   },
 };
 

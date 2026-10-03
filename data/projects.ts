@@ -34,8 +34,12 @@ export interface GalleryMedia {
    * off YouTube search but plays in an embed.
    */
   youtubeId?: string;
-  /** Seconds into the video that makes the best poster frame. */
-  posterAtSeconds?: number;
+  /**
+   * One line describing what the footage shows, shown under the video.
+   * Written for a visitor who cannot play the build: it should say what the
+   * hardware in the shot actually is.
+   */
+  videoCaption?: string;
 }
 
 export interface Project {
@@ -54,8 +58,19 @@ export interface Project {
    * play button. Required for any non-playable project.
    */
   boundaryNote?: string;
-  /** itch.io URL. Present for playable projects. */
+  /** itch.io project page. Present for playable projects. Used for the
+   *  "open on itch.io" link, never for the iframe. */
   itchUrl?: string;
+  /**
+   * Numeric id from itch.io's own embed code, e.g. 4070479 for
+   * https://nitinvincent.itch.io/ufo-lander.
+   *
+   * Required whenever itchUrl is set. This is the only URL that can be framed:
+   * appending "/embed" to the project URL returns an itch.io help page that
+   * serves `X-Frame-Options: SAMEORIGIN`, so a cross-origin iframe is refused.
+   * The real player lives at https://itch.io/embed/{itchEmbedId}.
+   */
+  itchEmbedId?: string;
   /** Public source repo, when the repo genuinely serves as proof. */
   repoUrl?: string;
   media: GalleryMedia;
@@ -120,7 +135,9 @@ export const projects: Project[] = [
         "/media/block-strike-3.png",
       ],
       youtubeId: "PENDING_BLOCK_STRIKE",
-      posterAtSeconds: 6,
+      videoCaption:
+        "Recorded on the rehabilitation machine. Aim is driven by the movement " +
+        "sensor over the serial bridge, not by a mouse or keyboard.",
     },
     tech: ["Unity 6", "C#", "TCP sockets", "Threading", "Procedural generation", "Input Systems"],
     stats: [
@@ -183,7 +200,10 @@ export const projects: Project[] = [
         "/media/lumber-dash-3.png",
       ],
       youtubeId: "PENDING_LUMBER_DASH",
-      posterAtSeconds: 5,
+      videoCaption:
+        "Recorded on the rehabilitation machine with the arcade cabinet buttons " +
+        "connected. Every input shown here comes from a physical button press " +
+        "received over TCP.",
     },
     tech: ["Unity 6", "C#", "TCP server", "Threading", "Particle VFX", "Parallax"],
     stats: [
@@ -241,7 +261,10 @@ export const projects: Project[] = [
         "/media/galaxy-flex-3.png",
       ],
       youtubeId: "PENDING_GALAXY_FLEX",
-      posterAtSeconds: 7,
+      videoCaption:
+        "Recorded on the rehabilitation machine with the wrist-motion sensor " +
+        "steering the ship. This is the standard build; a D-Handle variant also " +
+        "ships for patients with a constrained grip.",
     },
     tech: ["Unity 6", "C#", "Object pooling", "Motion sensors", "Parallax", "Inno Setup"],
     stats: [
@@ -307,7 +330,9 @@ export const projects: Project[] = [
     media: {
       images: [],
       youtubeId: "8QlwPnu0JwM",
-      posterAtSeconds: 12,
+      videoCaption:
+        "Gameplay from the public repository's build: twin-stick movement and " +
+        "aiming, NavMesh zombie pathfinding, and Wwise Events driven from C#.",
     },
     tech: ["Unity 6000.0.31f1", "URP", "Wwise 2024.1.6", "NavMesh", "Raycasting", "C#"],
     stats: [
@@ -367,6 +392,7 @@ export const projects: Project[] = [
       "simulation accuracy. Crash validation checks landing speed and angle, " +
       "and thruster audio is modulated in real time by player input through RTPC.",
     itchUrl: "https://nitinvincent.itch.io/ufo-lander",
+    itchEmbedId: "4070479",
     repoUrl: "https://github.com/Nithinvincen5209/UFO",
     media: { images: [] },
     tech: ["Unity 6000.0.31f1", "Rigidbody", "Wwise 2024.1.6", "RTPC", "C#"],
@@ -399,7 +425,8 @@ export const projects: Project[] = [
         body:
           "Main and side thruster sounds are driven by a real-time parameter " +
           "from player input, so the audio responds continuously to what the " +
-          "player is doing rather than switching between fixed clips. Explosion "          + "effects run through the same game-state machine.",
+          "player is doing rather than switching between fixed clips. Explosion " +
+          "effects run through the same game-state machine.",
       },
     ],
   },
@@ -415,6 +442,7 @@ export const projects: Project[] = [
       "A playable browser game published on itch.io. Includes source access " +
       "and is built in Unity.",
     itchUrl: "https://nitinvincent.itch.io/tower-tactics",
+    itchEmbedId: "4072206",
     media: { images: [] },
     tech: ["Unity", "C#"],
     sections: [
@@ -439,6 +467,7 @@ export const projects: Project[] = [
       "A playable browser game published on itch.io. Memory-matching gameplay " +
       "built in Unity.",
     itchUrl: "https://nitinvincent.itch.io/memory-match",
+    itchEmbedId: "4069605",
     media: { images: [] },
     tech: ["Unity", "C#"],
     sections: [
@@ -461,6 +490,7 @@ export const projects: Project[] = [
     summary:
       "A playable browser shooter published on itch.io, built in Unity.",
     itchUrl: "https://nitinvincent.itch.io/aero-timeline-shooter",
+    itchEmbedId: "4081223",
     media: { images: [] },
     tech: ["Unity", "C#"],
     sections: [

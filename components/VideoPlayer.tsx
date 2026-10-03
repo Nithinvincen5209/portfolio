@@ -7,8 +7,8 @@ interface Props {
   title: string;
   /** Poster image shown before the video loads. */
   poster?: string;
-  /** Local seconds to seek to for the poster frame, shown in the hint. */
-  posterAtSeconds?: number;
+  /** One line on what the footage shows. Shown under the player. */
+  caption?: string;
   /** True while the id is still the PENDING_ placeholder. */
   pending?: boolean;
 }
@@ -17,20 +17,40 @@ export default function VideoPlayer({
   youtubeId,
   title,
   poster,
-  posterAtSeconds,
+  caption,
   pending = false,
 }: Props) {
   const [playing, setPlaying] = useState(false);
 
   if (pending) {
+    // Holds the same hero slot a live video would, so the page does not collapse
+    // into a photo gallery while the recording is being published. The poster
+    // still carries the evidence; only the playback is missing.
     return (
-      <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-warn/40 bg-warn/5 p-6 text-center">
-        <span className="chip !border-warn/40 !text-warn">video pending</span>
-        <p className="max-w-sm text-sm text-muted">
-          Gameplay recording for <span className="text-text">{title}</span> is
-          ready to publish. It will appear here once uploaded.
-        </p>
-      </div>
+      <figure className="overflow-hidden rounded-lg border border-border bg-surface">
+        <div className="relative aspect-video w-full">
+          {poster ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={poster}
+              alt={`${title} gameplay`}
+              className="h-full w-full object-cover"
+            />
+          ) : null}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-bg/70 p-6 text-center backdrop-blur-[2px]">
+            <span className="chip">gameplay recording</span>
+            <p className="max-w-sm text-sm text-muted">
+              Recorded on the rehabilitation hardware this game runs on.
+              Publishing the video shortly.
+            </p>
+          </div>
+        </div>
+        {caption ? (
+          <figcaption className="border-t border-border px-4 py-2.5 text-xs text-muted">
+            {caption}
+          </figcaption>
+        ) : null}
+      </figure>
     );
   }
 
@@ -62,29 +82,31 @@ export default function VideoPlayer({
           </div>
         )}
         <span className="absolute inset-0 flex items-center justify-center">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-bg/80 pl-1 text-2xl text-text backdrop-blur transition-transform group-hover:scale-105">
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-bg/85 pl-1 text-3xl text-text backdrop-blur transition-transform group-hover:scale-105">
             ▶
           </span>
         </span>
-        {posterAtSeconds ? (
-          <span className="absolute bottom-2 right-2 rounded bg-bg/80 px-1.5 py-0.5 font-mono text-[10px] text-muted">
-            poster @ {posterAtSeconds}s
-          </span>
-        ) : null}
       </button>
     );
   }
 
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-black">
-      <iframe
-        // youtube-nocookie does not set tracking cookies until playback.
-        src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1`}
-        title={title}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        className="h-full w-full"
-      />
-    </div>
+    <figure className="overflow-hidden rounded-lg border border-border bg-black">
+      <div className="aspect-video w-full">
+        <iframe
+          // youtube-nocookie does not set tracking cookies until playback.
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1`}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="h-full w-full"
+        />
+      </div>
+      {caption ? (
+        <figcaption className="border-t border-border bg-surface px-4 py-2.5 text-xs text-muted">
+          {caption}
+        </figcaption>
+      ) : null}
+    </figure>
   );
 }

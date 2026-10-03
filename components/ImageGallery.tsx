@@ -1,27 +1,34 @@
 interface Props {
   images: string[];
   title: string;
+  /** Stable id source. Slugs are unique; titles are not guaranteed to be. */
+  slug: string;
 }
 
 /**
  * Screenshot gallery. Renders nothing when there are no images, so a project
  * with only a video does not get an empty heading.
  *
- * This is a deliberately simple grid rather than a lightbox: the images are a
- * secondary artefact here, and the gameplay video is the primary proof. A
- * lightbox would add JS, a focus trap and keyboard handling for marginal gain.
+ * A deliberately simple grid rather than a lightbox: the images are a secondary
+ * artefact here, and the video is the primary proof. A lightbox would add JS, a
+ * focus trap and keyboard handling for marginal gain.
  */
-export default function ImageGallery({ images, title }: Props) {
+export default function ImageGallery({ images, title, slug }: Props) {
   if (!images || images.length === 0) return null;
 
+  const headingId = `gallery-${slug}`;
+
   return (
-    <section aria-labelledby={`gallery-${title.replace(/\s+/g, "-").toLowerCase()}`}>
-      <h2
-        id={`gallery-${title.replace(/\s+/g, "-").toLowerCase()}`}
-        className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted"
-      >
-        Screenshots
-      </h2>
+    <section aria-labelledby={headingId} className="space-y-3">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2
+          id={headingId}
+          className="text-sm font-semibold uppercase tracking-wide text-muted"
+        >
+          Screenshots
+        </h2>
+        <span className="font-mono text-xs text-muted/70">{images.length}</span>
+      </div>
       <div
         className={`grid gap-3 ${
           images.length === 1

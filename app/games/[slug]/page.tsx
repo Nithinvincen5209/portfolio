@@ -37,8 +37,13 @@ export default async function ProjectPage({
   if (!project) notFound();
 
   const ytId = project.media.youtubeId;
-  const hasVideo = Boolean(ytId);
   const isPending = ytId?.startsWith("PENDING_") ?? false;
+  const hasVideo = Boolean(ytId);
+
+  // The itch.io embed only renders when both identifiers are present. Falling
+  // back to the project page link keeps the page honest if one is ever missing,
+  // rather than pointing an iframe at an undefined id.
+  const canEmbed = Boolean(project.playable && project.itchEmbedId);
 
   return (
     <article className="space-y-10">
@@ -58,32 +63,38 @@ export default async function ProjectPage({
         </p>
       </header>
 
-      {/* Media: exactly one of playable embed or video, never both. */}
-      {project.playable && project.itchUrl ? (
-        <PlayableEmbed itchUrl={project.itchUrl} title={project.name} />
+      {/*
+        Order matters here. For a rehabilitation game the video is the proof, so
+        it takes the hero slot immediately under the title. For a playable game
+        the embed takes it instead. Never both: two competing 16:9 blocks in a
+        column pushes the actual writing below the fold.
+      */}
+      {canEmbed ? (
+        <PlayableEmbed
+          itchUrl={project.itchUrl!}
+          itchEmbedId={project.itchEmbedId!}
+          title={project.name}
+        />
       ) : hasVideo ? (
         <VideoPlayer
           youtubeId={ytId!}
           title={`${project.name} gameplay`}
           poster={project.media.poster}
-          posterAtSeconds={project.media.posterAtSeconds}
+          caption={project.media.videoCaption}
           pending={isPending}
         />
       ) : null}
 
-      {/* The honesty note sits directly under the media, where the absence is. */}
+      {/* Explains the absent play button while it is still what the eye hits. */}
       <BoundaryNote project={project} />
 
       {/* Summary */}
-      <section className="prose-body space-y-4">
-        <p className="text-base text-text">{project.summary}</p>
-      </section>
+      <p className="max-w-prose text-base leading-relaxed text-text">
+        {project.summary}
+      </p>
 
-      {/* Stats */}
+      {/* Verified numbers */}
       <Stats stats={project.stats ?? []} />
-
-      {/* Screenshots */}
-      <ImageGallery images={project.media.images} title={project.name} />
 
       {/* Case study body */}
       {project.sections.map((s) => (
@@ -92,6 +103,13 @@ export default async function ProjectPage({
           <p className="prose-body">{s.body}</p>
         </section>
       ))}
+
+      {/* Screenshots: supporting evidence, deliberately last. */}
+      <ImageGallery
+        images={project.media.images}
+        title={project.name}
+        slug={project.slug}
+      />
 
       {/* Tech + links */}
       <footer className="space-y-4 border-t border-border pt-6">

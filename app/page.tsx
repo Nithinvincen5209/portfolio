@@ -16,8 +16,8 @@ export default function HomePage() {
         <p className="max-w-prose text-lg leading-relaxed text-muted">
           {profile.role} building <span className="text-text">therapeutic games</span>{" "}
           and <span className="text-text">clinical assessment tools</span> that
-          run on real rehabilitation hardware — driven by patient movement over a
-          serial-to-TCP bridge, not by a keyboard.
+          run on real rehabilitation hardware, driven in the clinic by patient movement
+          over a serial-to-TCP bridge and delivered as Windows installers.
         </p>
         <div className="flex flex-wrap gap-3 pt-1">
           <Link href="/games" className="btn !border-accentDim !text-accent">
@@ -67,9 +67,9 @@ export default function HomePage() {
           ))}
         </div>
         <p className="text-sm text-muted">
-          These run on the rehabilitation machine. Each page shows recorded
-          gameplay, screenshots, and why a browser build would misrepresent the
-          work.
+          These run on the rehabilitation machine and were delivered as Windows
+          installers. Each page shows recorded gameplay, screenshots, and what
+          the hardware in the footage actually is.
         </p>
       </section>
 

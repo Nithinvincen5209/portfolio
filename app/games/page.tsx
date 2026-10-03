@@ -13,8 +13,9 @@ const groups: { heading: string; blurb: string; slugs: string[] }[] = [
   {
     heading: "Therapeutic games",
     blurb:
-      "Shipped to a rehabilitation-engineering client and driven by patient " +
-      "movement. Video and screenshots only — these need the machine.",
+      "Shipped to a rehabilitation-engineering client as Windows installers and " +
+      "driven in the clinic by patient movement. Video and screenshots only — " +
+      "these were never built as browser games.",
     slugs: ["block-strike", "lumber-dash", "galaxy-flex"],
   },
   {
@@ -41,8 +42,8 @@ export default function GamesPage() {
         <p className="max-w-prose text-[15px] leading-relaxed text-muted">
           {projects.length} projects, grouped by what a visitor can actually do
           with them. The distinction is not a design preference: the therapeutic
-          games depend on serial hardware and physical controls, so a browser
-          build of them would be misleading.
+          games were delivered to clinics as Windows installers, not built for
+          the browser, so they are shown as video rather than as an embed.
         </p>
       </header>
 

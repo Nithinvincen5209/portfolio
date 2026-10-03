@@ -37,7 +37,6 @@ export default async function ProjectPage({
   if (!project) notFound();
 
   const ytId = project.media.youtubeId;
-  const isPending = ytId?.startsWith("PENDING_") ?? false;
   const hasVideo = Boolean(ytId);
 
   // The itch.io embed only renders when both identifiers are present. Falling
@@ -81,7 +80,6 @@ export default async function ProjectPage({
           title={`${project.name} gameplay`}
           poster={project.media.poster}
           caption={project.media.videoCaption}
-          pending={isPending}
         />
       ) : null}
 

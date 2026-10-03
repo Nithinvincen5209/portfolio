@@ -98,13 +98,15 @@ export interface Project {
  * "Reamp Machine Script"), which is what makes the claim checkable.
  */
 const DEVICE_BRIDGE =
-  "The games are driven by real patient movement, not a keyboard. A Python " +
-  "bridge opens the serial port at 115200 baud, detects the USB device " +
-  "automatically so no port has to be hard-coded, and streams live movement " +
-  "data into Unity over localhost TCP. Serial reads and socket writes are " +
-  "guarded by locks, because the read loop and the network thread would " +
-  "otherwise race on the same buffer. A dual-axis variant publishes X and Y on " +
-  "separate channels so the game can read each axis independently.";
+  "In the clinic the games are driven by real patient movement rather than by " +
+  "a keyboard. A Python bridge opens the serial port at 115200 baud, detects " +
+  "the USB device automatically so no port has to be hard-coded, and streams " +
+  "live movement data into Unity over localhost TCP. Serial reads and socket " +
+  "writes are guarded by locks, because the read loop and the network thread " +
+  "would otherwise race on the same buffer. A dual-axis variant publishes X and " +
+  "Y on separate channels so the game can read each axis independently. " +
+  "Conventional keyboard and mouse input is wired up alongside the bridge for " +
+  "setup and for testing the game without the hardware present.";
 
 export const projects: Project[] = [
   // -------------------------------------------------------------------------
@@ -123,10 +125,11 @@ export const projects: Project[] = [
       "difficulty tiers, with aim-and-match scoring and combo feedback that " +
       "rewards sustained, controlled motion.",
     boundaryNote:
-      "Requires the rehabilitation machine. The aiming input arrives over " +
-      "serial and TCP from a movement sensor, so this game is deliberately " +
-      "not published as a browser build. A web version would run without the " +
-      "input hardware and would misrepresent what the software actually does.",
+      "Ships as a Windows installer to clinic machines and was never built as " +
+      "a browser game. In the clinic, aim arrives from the movement sensor over " +
+      "the serial bridge; keyboard and mouse are wired up for setup and testing " +
+      "away from the hardware. Video and screenshots rather than an embed, " +
+      "because a web build is not what was delivered.",
     media: {
       poster: "/media/block-strike-poster.png",
       images: [
@@ -134,10 +137,11 @@ export const projects: Project[] = [
         "/media/block-strike-2.png",
         "/media/block-strike-3.png",
       ],
-      youtubeId: "PENDING_BLOCK_STRIKE",
+      youtubeId: "oFWU-_QxhOs",
       videoCaption:
-        "Recorded on the rehabilitation machine. Aim is driven by the movement " +
-        "sensor over the serial bridge, not by a mouse or keyboard.",
+        "Gameplay recorded on the rehabilitation machine, where aim arrives " +
+        "from the movement sensor over the serial bridge. Keyboard and mouse " +
+        "input are also wired up, for setup and testing away from the clinic.",
     },
     tech: ["Unity 6", "C#", "TCP sockets", "Threading", "Procedural generation", "Input Systems"],
     stats: [
@@ -188,10 +192,11 @@ export const projects: Project[] = [
       "challenge matched to the patient's capability, with parallax scrolling " +
       "and particle effects layered over a threaded TCP input server.",
     boundaryNote:
-      "Requires the rehabilitation machine and its arcade cabinet buttons. " +
-      "Input arrives over a TCP server from the cabinet, so there is no " +
-      "meaningful browser version: without the buttons the reflex loop the game " +
-      "exists to train cannot happen.",
+      "Ships as a Windows installer to clinic machines and was never built as " +
+      "a browser game. In the clinic, input arrives from the arcade cabinet " +
+      "over a TCP server; the cabinet also maps to the keyboard for setup and " +
+      "testing without the hardware. Video and screenshots rather than an " +
+      "embed, because a web build is not what was delivered.",
     media: {
       poster: "/media/lumber-dash-poster.png",
       images: [
@@ -199,11 +204,12 @@ export const projects: Project[] = [
         "/media/lumber-dash-2.png",
         "/media/lumber-dash-3.png",
       ],
-      youtubeId: "PENDING_LUMBER_DASH",
+      youtubeId: "EWu-h9htNEk",
       videoCaption:
-        "Recorded on the rehabilitation machine with the arcade cabinet buttons " +
-        "connected. Every input shown here comes from a physical button press " +
-        "received over TCP.",
+        "Gameplay recorded on the rehabilitation machine with the arcade " +
+        "cabinet buttons connected over TCP. The cabinet also maps to the " +
+        "keyboard, which is how the game gets set up and tested without the " +
+        "hardware.",
     },
     tech: ["Unity 6", "C#", "TCP server", "Threading", "Particle VFX", "Parallax"],
     stats: [
@@ -250,9 +256,11 @@ export const projects: Project[] = [
       "in a D-Handle controller coupler build for patients using a constrained " +
       "grip.",
     boundaryNote:
-      "Requires the rehabilitation machine's wrist-motion sensor (and, in the " +
-      "D-Handle variant, the controller coupler). Steering is the game, so there " +
-      "is no browser version: without the sensor the core mechanic does not exist.",
+      "Ships as a Windows installer to clinic machines and was never built as " +
+      "a browser game. In the clinic, steering comes from the wrist-motion " +
+      "sensor, with a D-Handle coupler variant for a constrained grip; " +
+      "keyboard steering is available for testing. Video and screenshots rather " +
+      "than an embed, because a web build is not what was delivered.",
     media: {
       poster: "/media/galaxy-flex-poster.png",
       images: [
@@ -260,11 +268,12 @@ export const projects: Project[] = [
         "/media/galaxy-flex-2.png",
         "/media/galaxy-flex-3.png",
       ],
-      youtubeId: "PENDING_GALAXY_FLEX",
+      youtubeId: "P38GlO9vGd4",
       videoCaption:
-        "Recorded on the rehabilitation machine with the wrist-motion sensor " +
-        "steering the ship. This is the standard build; a D-Handle variant also " +
-        "ships for patients with a constrained grip.",
+        "Gameplay recorded on the rehabilitation machine, steering via the " +
+        "wrist-motion sensor. A D-Handle coupler variant ships for patients " +
+        "with a constrained grip. Keyboard steering is also available for " +
+        "testing.",
     },
     tech: ["Unity 6", "C#", "Object pooling", "Motion sensors", "Parallax", "Inno Setup"],
     stats: [
@@ -606,11 +615,6 @@ export const playableProjects = projects.filter((p) => p.playable);
 export const nonPlayableProjects = projects.filter((p) => !p.playable);
 
 export const rehabProjects = projects.filter((p) => p.category === "rehab");
-
-/** Every YouTube id still waiting on an upload. Drives the asset checklist. */
-export const pendingVideoIds = projects
-  .filter((p) => p.media.youtubeId?.startsWith("PENDING_"))
-  .map((p) => ({ slug: p.slug, name: p.name, placeholder: p.media.youtubeId }));
 
 export function getProject(slug: string): Project | undefined {
   return projects.find((p) => p.slug === slug);

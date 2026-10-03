@@ -124,10 +124,11 @@ export default function AboutPage() {
           </li>
           <li>
             <span className="text-text">
-              Some projects are deliberately not playable.
+              Some projects were never built for the browser.
             </span>{" "}
-            Where a browser build would misrepresent the work, the page says so
-            instead of showing a button that does nothing.
+            The therapeutic games were delivered to clinics as Windows
+            installers, so those pages show video rather than an embed instead
+            of a button that would go nowhere.
           </li>
           <li>
             <span className="text-text">Products ship under their real names.</span>{" "}

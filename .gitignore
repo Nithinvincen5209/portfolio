@@ -27,8 +27,12 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
+# Covers .env.production and .env.local too: NEXT_PUBLIC_SITE_URL is not a
+# secret, but a real .env holds whatever a deploy needs and this repo is public.
 .env
 .env*.local
+.env.production
+.env*.production
 
 # vercel
 .vercel

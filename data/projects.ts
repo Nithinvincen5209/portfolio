@@ -1,7 +1,7 @@
 ﻿/**
  * Single source of truth for every project on the site.
  *
- * One entry per project. The home page, the /games index and the [slug] pages
+ * One entry per project. The home page, the /work index and the [slug] pages
  * all read from this array, so a claim can never appear on one page and be
  * missing from another.
  *
@@ -12,11 +12,16 @@
  *   playable: false  -> VideoPlayer + ImageGallery, never an iframe
  *
  * This distinction is factual, not stylistic. The three Remap games and the six
- * clinical tools depend on real hardware: a rehabilitation machine, arcade
+ * measurement tools depend on real hardware: a rehabilitation machine, arcade
  * cabinet buttons, wrist-motion sensors and a serial device bridge at 115200
  * baud. A browser build of those games would either not run or would run without
  * the input hardware, which would misrepresent the work. Showing a play button
  * that does nothing is worse than showing video and saying plainly why.
+ *
+ * `category` is a technical grouping, not a ranking. "rehab" is the historical
+ * internal name for the Remap titles and is kept so filtering and the
+ * rehabProjects helper keep working; it is not what the site calls them in
+ * prose. The display grouping lives in app/work/page.tsx.
  */
 
 /** Which family a project belongs to. Drives filtering and layout. */
@@ -88,29 +93,40 @@ export interface Project {
 }
 
 /**
- * The device bridge, described once and reused across the three Remap games.
+ * The device bridge, described once and reused across the Remap games.
  *
  * This is the most differentiated part of the work and no other portfolio site
  * will have it: four Python diagnostic scripts, pyserial at 115200 baud,
  * automatic USB port detection, thread-safe serial and socket access, streaming
- * live patient movement into Unity over localhost. Four of these scripts exist
- * on disk (gameFD1V / gameFD2P2V / gameFD2V / gameFD3V under
- * "Reamp Machine Script"), which is what makes the claim checkable.
+ * live sensor input into Unity over localhost. Four of these scripts exist on
+ * disk (gameFD1V / gameFD2P2V / gameFD2V / gameFD3V under "Reamp Machine
+ * Script"), which is what makes the claim checkable.
+ *
+ * Written to lead with the engineering problem rather than the use case. The
+ * constraint — a serial input arriving mid-frame that you cannot buffer or
+ * retry — is what makes this interesting, and it is the part that generalises.
+ * The clinical setting gets one clause at the end rather than leading the
+ * paragraph, because leading with it turns a portable systems problem into a
+ * niche one.
  */
 const DEVICE_BRIDGE =
-  "In the clinic the games are driven by real patient movement rather than by " +
-  "a keyboard. A Python bridge opens the serial port at 115200 baud, detects " +
-  "the USB device automatically so no port has to be hard-coded, and streams " +
-  "live movement data into Unity over localhost TCP. Serial reads and socket " +
-  "writes are guarded by locks, because the read loop and the network thread " +
-  "would otherwise race on the same buffer. A dual-axis variant publishes X and " +
-  "Y on separate channels so the game can read each axis independently. " +
+  "The hard part is not the game. It is that input arrives from a sensor on a " +
+  "serial port while the render loop is already running, and it cannot be " +
+  "buffered or retried. A Python bridge opens the serial port at 115200 baud " +
+  "and detects the USB device automatically, so no port has to be hard-coded " +
+  "and the same build works on whatever machine it is deployed to. Serial " +
+  "reads and socket writes are guarded by locks, because the read loop and the " +
+  "network thread would otherwise race on the same buffer. Data is streamed " +
+  "into Unity over localhost TCP. A dual-axis variant publishes X and Y on " +
+  "separate channels so each axis can be read independently. " +
   "Conventional keyboard and mouse input is wired up alongside the bridge for " +
-  "setup and for testing the game without the hardware present.";
+  "setup and for testing without the hardware present. These were built for " +
+  "clinical use, where the hardware dependency is a design constraint rather " +
+  "than a preference.";
 
 export const projects: Project[] = [
   // -------------------------------------------------------------------------
-  // Remap / rehabilitation games. Hardware-dependent: video + gallery only.
+  // Remap games. Hardware-dependent, so video + gallery only.
   // -------------------------------------------------------------------------
   {
     slug: "block-strike",
@@ -118,18 +134,18 @@ export const projects: Project[] = [
     category: "rehab",
     playable: false,
     order: 1,
-    tagline: "Procedural bubble-grid therapeutic shooter, driven by patient movement.",
+    tagline: "Procedural bubble-grid shooter, aim driven by live motion input.",
     summary:
-      "A therapeutic arcade shooter whose aim is driven by real movement " +
-      "over a serial-to-TCP bridge. Procedurally generated grids across three " +
+      "An arcade shooter whose aim is driven by real movement arriving over a " +
+      "serial-to-TCP bridge. Procedurally generated grids across three " +
       "difficulty tiers, with aim-and-match scoring and combo feedback that " +
       "rewards sustained, controlled motion.",
     boundaryNote:
-      "Ships as a Windows installer to clinic machines and was never built as " +
-      "a browser game. In the clinic, aim arrives from the movement sensor over " +
-      "the serial bridge; keyboard and mouse are wired up for setup and testing " +
-      "away from the hardware. Video and screenshots rather than an embed, " +
-      "because a web build is not what was delivered.",
+      "Ships as a Windows installer and was never built as a browser game. Aim " +
+      "arrives from the movement sensor over the serial bridge; keyboard and " +
+      "mouse are wired up for setup and testing away from the hardware. Video " +
+      "and screenshots rather than an embed, because a web build is not what " +
+      "was delivered.",
     media: {
       poster: "/media/block-strike-poster.png",
       images: [
@@ -173,8 +189,9 @@ export const projects: Project[] = [
           "socket callback would stall rendering whenever a packet arrived at " +
           "the wrong moment, so incoming data is buffered under a lock and " +
           "drained on the main thread instead. That is the difference between a " +
-          "prototype that stutters and something a therapist can put in front " +
-          "of a patient for twenty minutes.",
+          "prototype that stutters on a bad frame and something that can run " +
+          "in front of someone for twenty minutes without pulling their " +
+          "attention to the framerate.",
       },
     ],
   },
@@ -185,18 +202,18 @@ export const projects: Project[] = [
     category: "rehab",
     playable: false,
     order: 2,
-    tagline: "Reflex therapeutic game played with physical arcade cabinet buttons.",
+    tagline: "Reflex game driven by physical arcade cabinet buttons.",
     summary:
-      "A fast reflex game controlled by real arcade cabinet buttons on the " +
-      "rehabilitation machine. Streak-based difficulty scaling keeps the " +
-      "challenge matched to the patient's capability, with parallax scrolling " +
-      "and particle effects layered over a threaded TCP input server.",
+      "A fast reflex game controlled by real arcade cabinet buttons. " +
+      "Streak-based difficulty scaling keeps the challenge matched to the " +
+      "player, with parallax scrolling and particle effects layered over a " +
+      "threaded TCP input server.",
     boundaryNote:
-      "Ships as a Windows installer to clinic machines and was never built as " +
-      "a browser game. In the clinic, input arrives from the arcade cabinet " +
-      "over a TCP server; the cabinet also maps to the keyboard for setup and " +
-      "testing without the hardware. Video and screenshots rather than an " +
-      "embed, because a web build is not what was delivered.",
+      "Ships as a Windows installer and was never built as a browser game. Input " +
+      "arrives from the arcade cabinet over a TCP server; the cabinet also maps " +
+      "to the keyboard for setup and testing without the hardware. Video and " +
+      "screenshots rather than an embed, because a web build is not what was " +
+      "delivered.",
     media: {
       poster: "/media/lumber-dash-poster.png",
       images: [
@@ -225,7 +242,7 @@ export const projects: Project[] = [
           "A reflex game where the player reacts to incoming targets and is " +
           "scored on reaction speed. Difficulty scales with the current streak " +
           "rather than a fixed level, so the game tightens as the player " +
-          "improves and eases off after a miss, which keeps a patient in the " +
+          "improves and eases off after a miss, which keeps the player in the " +
           "productive difficulty band instead of at a wall or on easy. A " +
           "tutorial system introduces the cabinet controls on first use.",
       },
@@ -249,18 +266,18 @@ export const projects: Project[] = [
     category: "rehab",
     playable: false,
     order: 3,
-    tagline: "Wave-based therapeutic shooter with wrist-sensor steering.",
+    tagline: "Wave-based shooter with wrist-sensor steering.",
     summary:
       "A wave-based arcade shooter steered by wrist-motion sensing, built " +
       "around a generic object pool for projectiles and meteors. Also shipped " +
-      "in a D-Handle controller coupler build for patients using a constrained " +
+      "in a D-Handle controller coupler build for players using a constrained " +
       "grip.",
     boundaryNote:
-      "Ships as a Windows installer to clinic machines and was never built as " +
-      "a browser game. In the clinic, steering comes from the wrist-motion " +
-      "sensor, with a D-Handle coupler variant for a constrained grip; " +
-      "keyboard steering is available for testing. Video and screenshots rather " +
-      "than an embed, because a web build is not what was delivered.",
+      "Ships as a Windows installer and was never built as a browser game. " +
+      "Steering comes from the wrist-motion sensor, with a D-Handle coupler " +
+      "variant for a constrained grip; keyboard steering is available for " +
+      "testing. Video and screenshots rather than an embed, because a web build " +
+      "is not what was delivered.",
     media: {
       poster: "/media/galaxy-flex-poster.png",
       images: [
@@ -513,7 +530,7 @@ export const projects: Project[] = [
   },
 ];
 
-/** Grouping for the six clinical assessment tools, shown on /clinical-tools. */
+/** Grouping for the six measurement tools, shown on /work#measurement-tools. */
 export interface ClinicalTool {
   name: string;
   /** What the tool measures. */
@@ -525,13 +542,23 @@ export interface ClinicalTool {
 }
 
 /**
- * The six clinical tools. Each ships as its own Inno Setup installer, with a
+ * The six measurement tools. Each ships as its own Inno Setup installer, with a
  * measured and a non-measurement variant where applicable.
  *
  * Verified against the installers in "C:\Users\nithi\Desktop\Inno Installation
- * files": six clinical installers alongside Block Strike, Ferris Wheel and
- * Galaxy Flex, which is where the "nine Windows applications" figure on the
- * resume comes from.
+ * files", which holds 10 `.iss` scripts and 10 built installers, 24.4-45.3 MB:
+ * Block Strike, Ferris Wheel, Galaxy Flex, Lumber Dash, and these six. That is
+ * where the "ten Windows applications" figure on the resume comes from.
+ *
+ * Count the `.iss` files rather than globbing installer names. An earlier
+ * "nine" came from globbing `*Setup*.exe`, which missed Grip Non-Measure.exe
+ * (no `_Setup` suffix) and so understated the total by one.
+ *
+ * NOTE: this array does NOT enumerate every shipped title. Ferris Wheel is a
+ * fourth game that shipped (45.3 MB installer, CompanyName Remap, v1.0) but has
+ * no surviving source project, so it gets no entry and no case study page. It is
+ * named in the shipped counts and no gameplay detail is claimed for it. The
+ * other three games each have a project entry above.
  */
 export const clinicalTools: ClinicalTool[] = [
   {
@@ -558,7 +585,9 @@ export const clinicalTools: ClinicalTool[] = [
 export const profile = {
   name: "Nithin Vincent",
   role: "Unity Developer",
-  tagline: "Therapeutic games and clinical tools for rehabilitation hardware.",
+  tagline:
+  "Unity developer working on gameplay systems, real-time device integration " +
+  "and interactive audio.",
   location: "Thrissur, Kerala, India",
   email: "nithinvincent371@gmail.com",
   github: "https://github.com/Nithinvincen5209",
@@ -585,6 +614,15 @@ export const skillGroups: { heading: string; items: string[] }[] = [
     ],
   },
   {
+    heading: "Audio & Middleware",
+    items: [
+      "Wwise 2024.1.6",
+      "Events, RTPCs, Switches",
+      "Real-time parameter modulation",
+      "Interactive audio design",
+    ],
+  },
+  {
     heading: "Hardware & Integration",
     items: [
       "Serial-to-TCP bridging (pyserial, 115200 baud)",
@@ -593,10 +631,6 @@ export const skillGroups: { heading: string; items: string[] }[] = [
       "D-Handle controller coupler",
       "Arcade button input",
     ],
-  },
-  {
-    heading: "Audio & Middleware",
-    items: ["Wwise 2024.1.6", "Events, RTPCs, Switches", "Real-time parameter modulation"],
   },
   {
     heading: "Tooling",

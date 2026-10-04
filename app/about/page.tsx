@@ -4,8 +4,9 @@ import { profile, skillGroups } from "@/data/projects";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Unity developer with eight months of professional experience shipping " +
-    "therapeutic games and clinical tools for rehabilitation hardware.",
+    "Unity developer with eight months of professional experience across " +
+    "gameplay systems, real-time hardware integration and interactive audio.",
+  alternates: { canonical: "/about" },
 };
 
 const timeline = [
@@ -15,10 +16,9 @@ const timeline = [
     org: "Remap Intelligence Solutions",
     body:
       "Own gameplay, device integration, packaging and release end to end " +
-      "across nine Windows applications for a rehabilitation-engineering " +
-      "client: three therapeutic arcade games and six clinical assessment " +
-      "tools. Built the Python serial-to-TCP bridge that carries patient " +
-      "movement into Unity, and packaged every application as an Inno Setup " +
+      "across ten Windows applications: four games and six measurement " +
+      "tools. Built the Python serial-to-TCP bridge that carries live sensor " +
+      "input into Unity, and packaged every application as an Inno Setup " +
       "installer.",
   },
   {
@@ -53,12 +53,20 @@ export default function AboutPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">What I work on</h2>
         <p className="prose-body">
-          The interesting problem in therapeutic game development is not the game.
-          It is that the input arrives from a sensor on a serial port while the
-          render loop is running, and the patient in front of the screen cannot
-          buffer or retry. Everything else — procedural generation, object
-          pooling, parallax — is secondary to keeping the frame steady and the
-          input honest.
+          The interesting problem in hardware-driven game development is not the
+          game. It is that the input arrives from a sensor on a serial port while
+          the render loop is running, and the person playing cannot buffer or
+          retry. Everything else — procedural generation, object pooling,
+          parallax — is secondary to keeping the frame steady and the input
+          honest.
+        </p>
+        <p className="prose-body">
+          Most of that work shipped for a rehabilitation-engineering client, which
+          is where the tolerance for a dropped frame comes from: it is a clinical
+          tool first and a game second. I enjoy the constraint. It is also the
+          reason the systems generalise — the input handling, the threading and the
+          packaging are the same problems in any project where the build has to
+          run on someone else's machine.
         </p>
       </section>
 
@@ -119,16 +127,16 @@ export default function AboutPage() {
             <span className="text-text">
               Gameplay video is recorded, not mocked up.
             </span>{" "}
-            The therapeutic games are shown running on the hardware they were
+            The hardware-input games are shown running on the hardware they were
             built for.
           </li>
           <li>
             <span className="text-text">
-              Some projects were never built for the browser.
+              Not every project was built for the browser.
             </span>{" "}
-            The therapeutic games were delivered to clinics as Windows
-            installers, so those pages show video rather than an embed instead
-            of a button that would go nowhere.
+            The hardware-input games were delivered as Windows installers, so
+            those pages show video rather than an embed instead of a button that
+            would go nowhere.
           </li>
           <li>
             <span className="text-text">Products ship under their real names.</span>{" "}

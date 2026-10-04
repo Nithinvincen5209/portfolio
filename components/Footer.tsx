@@ -30,7 +30,7 @@ export default function Footer() {
       <div className="border-t border-border/60">
         <p className="mx-auto w-full max-w-5xl px-5 py-4 text-xs text-muted/70">
           © {year} {profile.name}. Built with Next.js. Game footage is recorded
-          from the rehabilitation hardware the software runs on.
+          from the hardware the software runs on.
         </p>
       </div>
     </footer>

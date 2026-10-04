@@ -1,9 +1,29 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import ProjectCard from "@/components/ProjectCard";
-import { profile, rehabProjects, playableProjects } from "@/data/projects";
+import { profile, projects, playableProjects } from "@/data/projects";
+
+// The homepage canonical is declared here rather than inherited from
+// app/layout.tsx. See the note in that file for why.
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function HomePage() {
-  const featured = rehabProjects.slice(0, 3);
+  // Explicitly mixed, not a slice of any one category.
+  //
+  // rehabProjects.slice(0, 3) opened the homepage with three clinical titles in a
+  // row. nonPlayableProjects.slice(0, 3) was worse in a subtle way: it is also
+  // the same three, because every non-playable project is a Remap game, so the
+  // "rebalanced" version looked identical to the one it replaced. Zombie Shooter
+  // is the one non-playable project that is not, and it is also the only one with
+  // a public repository and full source.
+  //
+  // Two games with source and video, plus the one that shows general gameplay
+  // work, so the first screen is not a single-client body of work.
+  const featured = ["block-strike", "lumber-dash", "zombie-shooter"]
+    .map((slug) => projects.find((p) => p.slug === slug))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
   return (
     <div className="space-y-16">
@@ -14,14 +34,16 @@ export default function HomePage() {
           {profile.name}
         </h1>
         <p className="max-w-prose text-lg leading-relaxed text-muted">
-          {profile.role} building <span className="text-text">therapeutic games</span>{" "}
-          and <span className="text-text">clinical assessment tools</span> that
-          run on real rehabilitation hardware, driven in the clinic by patient movement
-          over a serial-to-TCP bridge and delivered as Windows installers.
+          {profile.role} building <span className="text-text">gameplay systems</span>,
+          {" "}
+          <span className="text-text">real-time device integration</span> and
+          interactive audio in Unity. Comfortable where a game has to take input
+          from real hardware mid-frame and still hold a steady framerate, and where
+          the build has to ship as something a non-programmer can install.
         </p>
         <div className="flex flex-wrap gap-3 pt-1">
-          <Link href="/games" className="btn !border-accentDim !text-accent">
-            See the games
+          <Link href="/work" className="btn !border-accentDim !text-accent">
+            See the work
           </Link>
           <Link href={profile.resumePdf} className="btn" download>
             Download resume
@@ -37,27 +59,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* The differentiator, stated up front rather than buried. */}
+      {/* The differentiator, stated as capability rather than as a contrast with
+          other portfolios. "This one shipped to clinics" defined the work by
+          opposition, which invited a reader to sort it into a healthcare bucket
+          and move on. Shipping ten installers is the same fact stated plainly. */}
       <section className="rounded-lg border border-accentDim bg-accent/5 p-6">
         <h2 className="mb-2 text-lg font-semibold">
-          Most portfolios show game projects. This one shipped to clinics.
+          Ten shipped applications, not just prototypes
         </h2>
         <p className="max-w-prose text-[15px] leading-relaxed text-muted">
-          The work here was delivered as{" "}
-          <span className="text-text">nine Windows applications</span> for a
-          rehabilitation-engineering client: therapeutic arcade games plus
-          clinical grip, pinch and range-of-motion assessment tools, every one
-          packaged as an Inno Setup installer for client deployment. The games
-          are steered by patient movement, and the tools read real sensor data
-          over a serial bridge at 115200 baud.
+          The Remap work shipped as{" "}
+          <span className="text-text">ten Windows applications</span>: four games
+          and six sensor-driven measurement tools, every one packaged as an Inno
+          Setup installer. The games take live input from arcade buttons and
+          wrist-motion sensors over a serial-to-TCP bridge, and the measurement
+          tools read the same hardware. Built for a rehabilitation-engineering
+          client, but the engineering is ordinary Unity work under a tighter
+          constraint than a game usually imposes.
         </p>
       </section>
 
-      {/* Featured rehab work */}
+      {/* Selected work */}
       <section className="space-y-5">
         <div className="flex items-baseline justify-between gap-4">
-          <h2 className="text-2xl font-semibold">Therapeutic games</h2>
-          <Link href="/games" className="link text-sm">
+          <h2 className="text-2xl font-semibold">Selected work</h2>
+          <Link href="/work" className="link text-sm">
             All projects →
           </Link>
         </div>
@@ -67,17 +93,17 @@ export default function HomePage() {
           ))}
         </div>
         <p className="text-sm text-muted">
-          These run on the rehabilitation machine and were delivered as Windows
-          installers. Each page shows recorded gameplay, screenshots, and what
-          the hardware in the footage actually is.
+          Games built around live hardware input, shown as recorded gameplay and
+          screenshots. Each page explains what the hardware in the footage is, and
+          whether keyboard and mouse also work.
         </p>
       </section>
 
-      {/* Playable, the opposite of the above. */}
+      {/* Playable */}
       <section className="space-y-5">
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="text-2xl font-semibold">Playable in browser</h2>
-          <Link href="/games" className="link text-sm">
+          <Link href="/work" className="link text-sm">
             All projects →
           </Link>
         </div>
@@ -92,15 +118,16 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* Clinical tools */}
+      {/* Measurement tooling */}
       <section className="space-y-5">
-        <h2 className="text-2xl font-semibold">Clinical assessment tools</h2>
+        <h2 className="text-2xl font-semibold">Measurement tooling</h2>
         <p className="max-w-prose text-[15px] leading-relaxed text-muted">
-          Grip, pinch and range-of-motion measurement applications, each shipped
-          as its own installer with a measurement and a calibration variant. They
-          are Windows desktop software and are not playable in a browser.
+          Six sensor-driven desktop applications for grip, pinch and
+          range-of-motion measurement, each shipped as its own installer with a
+          measurement and a calibration variant. They are Windows desktop
+          software and are not playable in a browser.
         </p>
-        <Link href="/clinical-tools" className="btn inline-flex">
+        <Link href="/work#measurement-tools" className="btn inline-flex">
           What they measure
         </Link>
       </section>

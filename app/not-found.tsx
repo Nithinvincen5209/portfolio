@@ -9,7 +9,7 @@ export default function NotFound() {
         That project does not exist, or its slug changed.
       </p>
       <div className="flex gap-3">
-        <Link href="/games" className="btn">
+        <Link href="/work" className="btn">
           Browse projects
         </Link>
         <Link href="/" className="btn">

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { profile } from "@/data/projects";
 
+// Two items. "Clinical Tools" used to sit here permanently, which made one
+// client's domain look like a specialism rather than one engagement among
+// several. It now lives as a group on /work.
 const nav = [
-  { href: "/games", label: "Games" },
-  { href: "/clinical-tools", label: "Clinical Tools" },
+  { href: "/work", label: "Work" },
   { href: "/about", label: "About" },
 ];
 

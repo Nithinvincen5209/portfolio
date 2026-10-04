@@ -24,6 +24,10 @@ export async function generateMetadata({
   return {
     title: project.name,
     description: project.tagline,
+    // Per-slug canonical. Without this each case study inherited the root
+    // canonical from app/layout.tsx and claimed to be a copy of the homepage,
+    // which is the opposite of what a case study is for.
+    alternates: { canonical: `/work/${project.slug}` },
   };
 }
 
@@ -48,7 +52,7 @@ export default async function ProjectPage({
     <article className="space-y-10">
       {/* Header */}
       <header className="space-y-4">
-        <Link href="/games" className="link text-sm">
+        <Link href="/work" className="link text-sm">
           ← All projects
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">

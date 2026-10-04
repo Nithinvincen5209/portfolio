@@ -1,10 +1,13 @@
 import Link from "next/link";
 import type { Project } from "@/data/projects";
 
+// Labels describe what the project IS, not which client it was for. "Rehabilitation
+// game" on two of the first three cards read as a specialism badge before a
+// reader has read a word of the copy.
 const categoryLabel: Record<Project["category"], string> = {
-  rehab: "Rehabilitation game",
+  rehab: "Hardware input",
   playable: "Playable",
-  tools: "Clinical tool",
+  tools: "Measurement tool",
   source: "Source available",
 };
 
@@ -18,7 +21,7 @@ const categoryTone: Record<Project["category"], string> = {
 export default function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
-      href={`/games/${project.slug}`}
+      href={`/work/${project.slug}`}
       className="card card-hover flex flex-col gap-3 no-underline"
     >
       <div className="flex items-start justify-between gap-3">

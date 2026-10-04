@@ -18,7 +18,14 @@ export const metadata: Metadata = {
     template: `%s — ${profile.name}`,
   },
   description: profile.tagline,
-  alternates: { canonical: "/" },
+  // NO canonical here on purpose.
+  //
+  // This used to carry `alternates: { canonical: "/" }`, and because metadata is
+  // merged down the tree, every route inherited it: all eight case studies, /work
+  // and /about each emitted a canonical pointing at the homepage. That is a
+  // "this page is a duplicate of /" instruction, so the one thing a portfolio
+  // cannot afford is for its case studies to be de-indexed in favour of the home
+  // page. Each route now declares its own canonical.
   openGraph: {
     title: `${profile.name} — ${profile.role}`,
     description: profile.tagline,

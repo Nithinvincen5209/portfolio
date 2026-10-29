@@ -29,13 +29,13 @@ export default function Header() {
               {n.label}
             </Link>
           ))}
-          <Link
+          <a
             href={profile.resumePdf}
             className="btn ml-1 !py-1.5 text-xs"
             download
           >
             Resume PDF
-          </Link>
+          </a>
         </nav>
       </div>
     </header>

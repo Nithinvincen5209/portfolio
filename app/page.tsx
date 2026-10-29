@@ -48,9 +48,12 @@ export default function HomePage() {
           <Link href="/work" className="btn !border-accentDim !text-accent">
             View work
           </Link>
-          <Link href={profile.resumePdf} className="btn" download>
+          {/* Plain <a>, not <Link>: the resume is a static file in /public, not
+              an app route. Link prefetches the href and its RSC payload, which
+              for a PDF means a guaranteed 404 in the console (/?_rsc -> pdf). */}
+          <a href={profile.resumePdf} className="btn" download>
             Download resume
-          </Link>
+          </a>
           <a
             href={profile.github}
             className="btn"
@@ -198,9 +201,9 @@ export default function HomePage() {
           <a className="btn !border-accentDim !text-accent" href={`mailto:${profile.email}`}>
             {profile.email}
           </a>
-          <Link href={profile.resumePdf} className="btn" download>
+          <a href={profile.resumePdf} className="btn" download>
             Resume PDF
-          </Link>
+          </a>
         </div>
       </section>
     </div>

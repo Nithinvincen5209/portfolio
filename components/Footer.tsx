@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { profile } from "@/data/projects";
 
 export default function Footer() {
@@ -25,9 +24,9 @@ export default function Footer() {
           <a className="link" href={profile.itch} target="_blank" rel="noreferrer noopener">
             itch.io
           </a>
-          <Link className="link" href={profile.resumePdf} download>
+          <a className="link" href={profile.resumePdf} download>
             Resume
-          </Link>
+          </a>
         </nav>
       </div>
       <div className="border-t border-border/60">

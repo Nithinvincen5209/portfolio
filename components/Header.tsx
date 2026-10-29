@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { profile } from "@/data/projects";
 
-// Two items. "Clinical Tools" used to sit here permanently, which made one
-// client's domain look like a specialism rather than one engagement among
-// several. It now lives as a group on /work.
+// Two items plus the resume. The nav stays deliberately short: "Work" and
+// "About" are the only two things a hiring reader looks for, and every extra
+// item competes with them.
 const nav = [
   { href: "/work", label: "Work" },
   { href: "/about", label: "About" },

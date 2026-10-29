@@ -31,6 +31,12 @@ export async function generateMetadata({
   };
 }
 
+const statusLabel = {
+  shipped: "Shipped · Windows build",
+  playable: "Playable in browser",
+  source: "Source available",
+} as const;
+
 export default async function ProjectPage({
   params,
 }: {
@@ -57,21 +63,20 @@ export default async function ProjectPage({
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="text-3xl font-bold sm:text-4xl">{project.name}</h1>
-          <span className="chip">
-            {project.playable ? "Playable in browser" : "Video & screenshots"}
-          </span>
+          <span className="chip">{statusLabel[project.category]}</span>
         </div>
         <p className="max-w-prose text-lg leading-relaxed text-muted">
           {project.tagline}
         </p>
+        <p className="text-sm text-muted">
+          <span className="font-medium text-text">Role · </span>
+          {project.role}
+        </p>
       </header>
 
-      {/*
-        Order matters here. For a rehabilitation game the video is the proof, so
-        it takes the hero slot immediately under the title. For a playable game
-        the embed takes it instead. Never both: two competing 16:9 blocks in a
-        column pushes the actual writing below the fold.
-      */}
+      {/* Proof first: the embed for a playable game, the recorded build
+          otherwise. Never both, because two competing 16:9 blocks push the
+          actual writing below the fold. */}
       {canEmbed ? (
         <PlayableEmbed
           itchUrl={project.itchUrl!}
@@ -87,7 +92,7 @@ export default async function ProjectPage({
         />
       ) : null}
 
-      {/* Explains the absent play button while it is still what the eye hits. */}
+      {/* How the build was delivered, stated once and plainly. */}
       <BoundaryNote project={project} />
 
       {/* Summary */}
@@ -97,6 +102,19 @@ export default async function ProjectPage({
 
       {/* Verified numbers */}
       <Stats stats={project.stats ?? []} />
+
+      {/* What was built. Bulleted, because a reader scans this before the prose. */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Key features</h2>
+        <ul className="max-w-prose space-y-2">
+          {project.features.map((f) => (
+            <li key={f} className="flex gap-2.5 text-[15px] leading-relaxed text-muted">
+              <span aria-hidden className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              {f}
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {/* Case study body */}
       {project.sections.map((s) => (

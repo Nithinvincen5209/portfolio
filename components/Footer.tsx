@@ -13,6 +13,9 @@ export default function Footer() {
           <p className="text-xs">{profile.location}</p>
         </div>
         <nav className="flex flex-wrap items-center gap-4">
+          <a className="link" href={`mailto:${profile.email}`}>
+            Email
+          </a>
           <a className="link" href={profile.github} target="_blank" rel="noreferrer noopener">
             GitHub
           </a>
@@ -29,8 +32,7 @@ export default function Footer() {
       </div>
       <div className="border-t border-border/60">
         <p className="mx-auto w-full max-w-5xl px-5 py-4 text-xs text-muted/70">
-          © {year} {profile.name}. Built with Next.js. Game footage is recorded
-          from the hardware the software runs on.
+          © {year} {profile.name}. Built with Next.js.
         </p>
       </div>
     </footer>

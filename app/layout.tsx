@@ -11,13 +11,20 @@ import Footer from "@/components/Footer";
 // that does not belong to this project.
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+// Shared by the page metadata and the generated OG/Twitter tags. Kept as one
+// string so a rewrite cannot leave the two out of sync.
+const description =
+  "Unity developer with eight months of professional experience building " +
+  "gameplay systems, UI and interactive audio. Four shipped Windows games, " +
+  "four browser builds, and public source for a 3D shooter.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: `${profile.name} — ${profile.role}`,
     template: `%s — ${profile.name}`,
   },
-  description: profile.tagline,
+  description,
   // NO canonical here on purpose.
   //
   // This used to carry `alternates: { canonical: "/" }`, and because metadata is
@@ -28,16 +35,25 @@ export const metadata: Metadata = {
   // page. Each route now declares its own canonical.
   openGraph: {
     title: `${profile.name} — ${profile.role}`,
-    description: profile.tagline,
+    description,
     url: siteUrl,
     siteName: profile.name,
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: `${profile.name} — ${profile.role}`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${profile.name} — ${profile.role}`,
-    description: profile.tagline,
+    description,
+    images: ["/og.png"],
   },
 };
 

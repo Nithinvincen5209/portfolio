@@ -5,27 +5,28 @@
  * all read from this array, so a claim can never appear on one page and be
  * missing from another.
  *
- * `playable` is the important field. It is the single switch that decides
- * whether a project gets a click-to-load browser embed or a video + gallery:
+ * `playable` is the only switch that decides how a project is presented:
  *
  *   playable: true   -> PlayableEmbed (itch.io iframe, loads only on click)
  *   playable: false  -> VideoPlayer + ImageGallery, never an iframe
  *
- * This distinction is factual, not stylistic. The three Remap games and the six
- * measurement tools depend on real hardware: a rehabilitation machine, arcade
- * cabinet buttons, wrist-motion sensors and a serial device bridge at 115200
- * baud. A browser build of those games would either not run or would run without
- * the input hardware, which would misrepresent the work. Showing a play button
- * that does nothing is worse than showing video and saying plainly why.
+ * This is a factual distinction, not a stylistic one: the shipped games were
+ * delivered as Windows installers, so a browser build does not exist to embed.
+ * Showing a play button that does nothing would be worse than showing video.
  *
- * `category` is a technical grouping, not a ranking. "rehab" is the historical
- * internal name for the Remap titles and is kept so filtering and the
- * rehabProjects helper keep working; it is not what the site calls them in
- * prose. The display grouping lives in app/work/page.tsx.
+ * `category` is a technical grouping, not a ranking:
+ *   shipped  -> delivered as Windows builds (video + screenshots)
+ *   playable -> published on itch.io, runs in a browser
+ *   source   -> public repository, no runnable public build
+ *
+ * Wording note: the copy here is written capability-first. Input hardware is a
+ * real part of the shipped games, but it is one line inside a project's
+ * technical notes, not the thing the project is named after. Anything stronger
+ * than that makes one client's constraint look like a specialism.
  */
 
 /** Which family a project belongs to. Drives filtering and layout. */
-export type Category = "rehab" | "playable" | "tools" | "source";
+export type Category = "shipped" | "playable" | "source";
 
 /** Media shown when no playable embed is possible. */
 export interface GalleryMedia {
@@ -39,11 +40,7 @@ export interface GalleryMedia {
    * off YouTube search but plays in an embed.
    */
   youtubeId?: string;
-  /**
-   * One line describing what the footage shows, shown under the video.
-   * Written for a visitor who cannot play the build: it should say what the
-   * hardware in the shot actually is.
-   */
+  /** One line describing what the footage shows, shown under the video. */
   videoCaption?: string;
 }
 
@@ -56,11 +53,16 @@ export interface Project {
   tagline: string;
   /** 1-2 sentence summary. Paragraph prose, no line breaks. */
   summary: string;
+  /**
+   * What the developer owned. Shown as a single line under the summary, so a
+   * reader can tell a solo build from a contribution without inferring it.
+   */
+  role: string;
   /** Whether a visitor can actually play this in a browser. */
   playable: boolean;
   /**
-   * Set when playable is false. Explains, on the page itself, why there is no
-   * play button. Required for any non-playable project.
+   * Set when playable is false. Explains, on the page itself, how the build was
+   * delivered. Required for any non-playable project.
    */
   boundaryNote?: string;
   /** itch.io project page. Present for playable projects. Used for the
@@ -79,6 +81,11 @@ export interface Project {
   /** Public source repo, when the repo genuinely serves as proof. */
   repoUrl?: string;
   media: GalleryMedia;
+  /**
+   * What was built, as short scannable claims. Rendered as a bullet list on the
+   * card and the case study. One feature per line, no trailing punctuation.
+   */
+  features: string[];
   /** Technology chips, ordered by relevance to the role being applied for. */
   tech: string[];
   /**
@@ -93,59 +100,44 @@ export interface Project {
 }
 
 /**
- * The device bridge, described once and reused across the Remap games.
+ * The one shared paragraph about device input.
  *
- * This is the most differentiated part of the work and no other portfolio site
- * will have it: four Python diagnostic scripts, pyserial at 115200 baud,
- * automatic USB port detection, thread-safe serial and socket access, streaming
- * live sensor input into Unity over localhost. Four of these scripts exist on
- * disk (gameFD1V / gameFD2P2V / gameFD2V / gameFD3V under "Reamp Machine
- * Script"), which is what makes the claim checkable.
+ * Kept, because it is real and it is checkable: four Python diagnostic scripts
+ * live on disk (gameFD1V / gameFD2P2V / gameFD2V / gameFD3V under "Reamp
+ * Machine Script"), pyserial at 115200 baud, automatic USB port detection,
+ * locks on serial and socket access, streamed into Unity over localhost TCP.
  *
- * Written to lead with the engineering problem rather than the use case. The
- * constraint — a serial input arriving mid-frame that you cannot buffer or
- * retry — is what makes this interesting, and it is the part that generalises.
- * The clinical setting gets one clause at the end rather than leading the
- * paragraph, because leading with it turns a portable systems problem into a
- * niche one.
+ * Deliberately two sentences. It is a technical note inside a case study, not
+ * the framing of the project: the games are judged on their gameplay systems,
+ * and this is the constraint they were built under.
  */
-const DEVICE_BRIDGE =
-  "The hard part is not the game. It is that input arrives from a sensor on a " +
-  "serial port while the render loop is already running, and it cannot be " +
-  "buffered or retried. A Python bridge opens the serial port at 115200 baud " +
-  "and detects the USB device automatically, so no port has to be hard-coded " +
-  "and the same build works on whatever machine it is deployed to. Serial " +
-  "reads and socket writes are guarded by locks, because the read loop and the " +
-  "network thread would otherwise race on the same buffer. Data is streamed " +
-  "into Unity over localhost TCP. A dual-axis variant publishes X and Y on " +
-  "separate channels so each axis can be read independently. " +
-  "Conventional keyboard and mouse input is wired up alongside the bridge for " +
-  "setup and for testing without the hardware present. These were built for " +
-  "clinical use, where the hardware dependency is a design constraint rather " +
-  "than a preference.";
+const INPUT_NOTE =
+  "Input also arrives from a sensor on a serial port, which a Python bridge " +
+  "reads at 115200 baud, detects the USB device automatically and streams into " +
+  "Unity over localhost TCP with serial and socket access guarded by locks. " +
+  "Keyboard and mouse are wired up alongside it, so the game is playable " +
+  "without the hardware present.";
 
 export const projects: Project[] = [
   // -------------------------------------------------------------------------
-  // Remap games. Hardware-dependent, so video + gallery only.
+  // Shipped games. Delivered as Windows installers, so video + gallery.
   // -------------------------------------------------------------------------
   {
     slug: "block-strike",
     name: "Block Strike",
-    category: "rehab",
+    category: "shipped",
     playable: false,
     order: 1,
-    tagline: "Procedural bubble-grid shooter, aim driven by live motion input.",
+    role: "Owned gameplay, UI and the Windows installer end to end.",
+    tagline: "Procedural bubble-grid shooter with tiered difficulty and combo scoring.",
     summary:
-      "An arcade shooter whose aim is driven by real movement arriving over a " +
-      "serial-to-TCP bridge. Procedurally generated grids across three " +
-      "difficulty tiers, with aim-and-match scoring and combo feedback that " +
-      "rewards sustained, controlled motion.",
+      "An arcade bubble-grid shooter built around procedurally generated " +
+      "levels, three difficulty tiers and an aim-and-match scoring loop. Combo " +
+      "multipliers and floating-text feedback reward sustained, controlled play " +
+      "across a long session.",
     boundaryNote:
-      "Ships as a Windows installer and was never built as a browser game. Aim " +
-      "arrives from the movement sensor over the serial bridge; keyboard and " +
-      "mouse are wired up for setup and testing away from the hardware. Video " +
-      "and screenshots rather than an embed, because a web build is not what " +
-      "was delivered.",
+      "Delivered as a Windows installer and never built for the web. The " +
+      "footage below is that build running.",
     media: {
       poster: "/media/block-strike-poster.png",
       images: [
@@ -155,43 +147,51 @@ export const projects: Project[] = [
       ],
       youtubeId: "oFWU-_QxhOs",
       videoCaption:
-        "Gameplay recorded on the rehabilitation machine, where aim arrives " +
-        "from the movement sensor over the serial bridge. Keyboard and mouse " +
-        "input are also wired up, for setup and testing away from the clinic.",
+        "Recorded gameplay: aim-driven bubble grid, combo scoring and the " +
+        "three difficulty tiers.",
     },
-    tech: ["Unity 6", "C#", "TCP sockets", "Threading", "Procedural generation", "Input Systems"],
+    features: [
+      "Procedurally generated bubble-grid levels across three difficulty tiers",
+      "Aim-and-match scoring with combo multipliers and floating-text feedback",
+      "Tutorial flow that introduces controls and scoring on first run",
+      "Game-state and session handling kept separate from level generation",
+      "61 C# scripts across 38 Unity scenes",
+    ],
+    tech: [
+      "Unity 6",
+      "C#",
+      "Procedural generation",
+      "Scoring & combos",
+      "UI feedback",
+      "Threaded TCP input",
+    ],
     stats: [
       { label: "C# scripts", value: "61" },
       { label: "Unity scenes", value: "38" },
-      { label: "Device input", value: "TCP :5000" },
+      { label: "Difficulty tiers", value: "3" },
       { label: "Packaged as", value: "Inno Setup" },
     ],
     sections: [
       {
-        heading: "What it does",
+        heading: "Overview",
         body:
           "Bubble-grid levels are generated procedurally across three " +
           "difficulty tiers rather than authored by hand, so difficulty scales " +
-          "without a separate level set. Scoring rewards accurate aim-and-match " +
-          "input with combo multipliers and floating-text feedback, which is " +
-          "what gives the player a reason to keep their movement controlled " +
-          "over a long session.",
+          "without shipping a separate level set for each tier. Scoring rewards " +
+          "accurate aim-and-match input with combo multipliers and floating-text " +
+          "feedback, which gives the player a reason to keep their movement " +
+          "controlled over a long session. A tutorial flow introduces the " +
+          "controls and the scoring rules on first run.",
       },
       {
-        heading: "Movement input over serial",
-        body: DEVICE_BRIDGE,
-      },
-      {
-        heading: "Why the input path is the interesting part",
+        heading: "Technical notes",
         body:
-          "The game loop runs on Unity's main thread while the sensor keeps " +
-          "arriving on its own thread. Reading movement straight from the " +
-          "socket callback would stall rendering whenever a packet arrived at " +
-          "the wrong moment, so incoming data is buffered under a lock and " +
-          "drained on the main thread instead. That is the difference between a " +
-          "prototype that stutters on a bad frame and something that can run " +
-          "in front of someone for twenty minutes without pulling their " +
-          "attention to the framerate.",
+          "The game loop runs on Unity's main thread while a second input " +
+          "source arrives on its own thread. Reading it straight from the " +
+          "callback stalls rendering whenever a packet lands at the wrong " +
+          "moment, so incoming data is buffered under a lock and drained on the " +
+          "main thread. " +
+          INPUT_NOTE,
       },
     ],
   },
@@ -199,21 +199,18 @@ export const projects: Project[] = [
   {
     slug: "lumber-dash",
     name: "Lumber Dash",
-    category: "rehab",
+    category: "shipped",
     playable: false,
     order: 2,
-    tagline: "Reflex game driven by physical arcade cabinet buttons.",
+    role: "Owned gameplay, UI and the Windows installer end to end.",
+    tagline: "Reflex game with streak-based difficulty scaling.",
     summary:
-      "A fast reflex game controlled by real arcade cabinet buttons. " +
-      "Streak-based difficulty scaling keeps the challenge matched to the " +
-      "player, with parallax scrolling and particle effects layered over a " +
-      "threaded TCP input server.",
+      "A reaction-time game where difficulty follows the player's current " +
+      "streak rather than a fixed level, layered with parallax scrolling and " +
+      "particle feedback. A first-run tutorial introduces the controls.",
     boundaryNote:
-      "Ships as a Windows installer and was never built as a browser game. Input " +
-      "arrives from the arcade cabinet over a TCP server; the cabinet also maps " +
-      "to the keyboard for setup and testing without the hardware. Video and " +
-      "screenshots rather than an embed, because a web build is not what was " +
-      "delivered.",
+      "Delivered as a Windows installer and never built for the web. The " +
+      "footage below is that build running.",
     media: {
       poster: "/media/lumber-dash-poster.png",
       images: [
@@ -223,39 +220,50 @@ export const projects: Project[] = [
       ],
       youtubeId: "EWu-h9htNEk",
       videoCaption:
-        "Gameplay recorded on the rehabilitation machine with the arcade " +
-        "cabinet buttons connected over TCP. The cabinet also maps to the " +
-        "keyboard, which is how the game gets set up and tested without the " +
-        "hardware.",
+        "Recorded gameplay: reaction timing, streak scaling and the parallax " +
+        "background layers.",
     },
-    tech: ["Unity 6", "C#", "TCP server", "Threading", "Particle VFX", "Parallax"],
+    features: [
+      "Reaction-time core loop scored on how quickly the player responds",
+      "Streak-based difficulty that tightens on success and eases after a miss",
+      "Parallax background layers plus particle feedback on every hit",
+      "Tutorial system that introduces the controls on first use",
+      "47 C# scripts across 37 Unity scenes",
+    ],
+    tech: [
+      "Unity 6",
+      "C#",
+      "Difficulty scaling",
+      "Parallax",
+      "Particle VFX",
+      "Threaded TCP input",
+    ],
     stats: [
       { label: "C# scripts", value: "47" },
       { label: "Unity scenes", value: "37" },
-      { label: "Input", value: "Arcade buttons" },
-      { label: "Scaling", value: "Streak-based" },
+      { label: "Difficulty model", value: "Streak-based" },
+      { label: "Packaged as", value: "Inno Setup" },
     ],
     sections: [
       {
-        heading: "What it does",
+        heading: "Overview",
         body:
-          "A reflex game where the player reacts to incoming targets and is " +
-          "scored on reaction speed. Difficulty scales with the current streak " +
-          "rather than a fixed level, so the game tightens as the player " +
-          "improves and eases off after a miss, which keeps the player in the " +
-          "productive difficulty band instead of at a wall or on easy. A " +
-          "tutorial system introduces the cabinet controls on first use.",
+          "The player reacts to incoming targets and is scored on reaction " +
+          "speed. Difficulty scales with the current streak rather than a fixed " +
+          "level, so the game tightens as the player improves and eases off " +
+          "after a miss. That keeps the player in the productive difficulty band " +
+          "instead of parked at a wall or sitting on easy, and it means one " +
+          "build covers the whole range of ability.",
       },
       {
-        heading: "Reading real buttons",
+        heading: "Technical notes",
         body:
-          "Button presses come from the cabinet over a thread-safe TCP server, " +
-          "several inputs at once from hardware that was never designed as a " +
-          "game device. The server therefore accepts concurrent connections and " +
-          "guards its state, because two inputs arriving in the same frame " +
-          "would otherwise race. Debouncing matters as much as the networking " +
-          "here: physical buttons bounce, and an unbounced arcade button fires " +
-          "the same action twice on one press.",
+          "Inputs are read on a thread-safe TCP server that accepts concurrent " +
+          "connections, because two presses arriving in the same frame would " +
+          "otherwise race on shared state. Debouncing matters as much as the " +
+          "networking: an unbounced physical button fires the same action twice " +
+          "on one press. " +
+          INPUT_NOTE,
       },
     ],
   },
@@ -263,21 +271,19 @@ export const projects: Project[] = [
   {
     slug: "galaxy-flex",
     name: "Galaxy Flex",
-    category: "rehab",
+    category: "shipped",
     playable: false,
     order: 3,
-    tagline: "Wave-based shooter with wrist-sensor steering.",
+    role: "Owned gameplay, UI and the Windows installer end to end.",
+    tagline: "Wave-based arcade shooter built on a shared object pool.",
     summary:
-      "A wave-based arcade shooter steered by wrist-motion sensing, built " +
-      "around a generic object pool for projectiles and meteors. Also shipped " +
-      "in a D-Handle controller coupler build for players using a constrained " +
-      "grip.",
+      "A wave-based shooter with escalating waves, layered parallax " +
+      "backgrounds and a single generic object pool shared by every spawned " +
+      "projectile and meteor. Also shipped in a second build with a D-Handle " +
+      "grip coupler for players with a constrained grip.",
     boundaryNote:
-      "Ships as a Windows installer and was never built as a browser game. " +
-      "Steering comes from the wrist-motion sensor, with a D-Handle coupler " +
-      "variant for a constrained grip; keyboard steering is available for " +
-      "testing. Video and screenshots rather than an embed, because a web build " +
-      "is not what was delivered.",
+      "Delivered as a Windows installer and never built for the web. The " +
+      "footage below is that build running.",
     media: {
       poster: "/media/galaxy-flex-poster.png",
       images: [
@@ -287,45 +293,50 @@ export const projects: Project[] = [
       ],
       youtubeId: "P38GlO9vGd4",
       videoCaption:
-        "Gameplay recorded on the rehabilitation machine, steering via the " +
-        "wrist-motion sensor. A D-Handle coupler variant ships for patients " +
-        "with a constrained grip. Keyboard steering is also available for " +
-        "testing.",
+        "Recorded gameplay: wave escalation, pooled projectiles and meteors, " +
+        "and the layered parallax backgrounds.",
     },
-    tech: ["Unity 6", "C#", "Object pooling", "Motion sensors", "Parallax", "Inno Setup"],
+    features: [
+      "Wave-based shooter loop with escalating wave difficulty",
+      "One generic object pool shared by projectiles and meteors",
+      "Layered parallax backgrounds that read as depth without 3D geometry",
+      "Standard and D-Handle grip configurations shipped as separate builds",
+      "71 C# scripts across 42 Unity scenes",
+    ],
+    tech: [
+      "Unity 6",
+      "C#",
+      "Object pooling",
+      "Wave systems",
+      "Parallax",
+      "Input systems",
+    ],
     stats: [
       { label: "C# scripts", value: "71" },
       { label: "Unity scenes", value: "42" },
-      { label: "Steering", value: "Wrist motion" },
-      { label: "Hardware variants", value: "Standard + D-Handle" },
+      { label: "Spawned objects", value: "Shared pool" },
+      { label: "Build variants", value: "Standard + D-Handle" },
     ],
     sections: [
       {
-        heading: "What it does",
+        heading: "Overview",
         body:
-          "Wave-based shooter: waves escalate, and the player steers with wrist " +
-          "motion rather than a stick. Layered parallax backgrounds give depth " +
-          "without the cost of 3D geometry, which matters when the target " +
-          "hardware is not a gaming machine.",
+          "Waves escalate as the player survives, and the ship is steered by " +
+          "movement rather than a stick alone. Layered parallax backgrounds give " +
+          "depth without the cost of 3D geometry, which matters when the target " +
+          "hardware is not a gaming machine. A second build adds a D-Handle " +
+          "grip coupler, so the same game can be played with a hand resting on a " +
+          "supported handle rather than held in a fist.",
       },
       {
-        heading: "Why a generic object pool",
+        heading: "Technical notes",
         body:
-          "Meteors and projectiles spawn continuously, and a naive instantiate " +
-          "per spawn produces a GC spike at exactly the wrong moment, during " +
-          "wave escalation, which is the moment the player most needs a stable " +
-          "frame rate. A single generic pool is used for every spawned object " +
-          "rather than a pool per prefab: the wave can escalate smoothly " +
-          "because nothing is being allocated mid-wave.",
-      },
-      {
-        heading: "Two hardware variants",
-        body:
-          "The standard build reads wrist motion directly. The D-Handle build " +
-          "adds a controller coupler for patients with a constrained or " +
-          "immobile grip, so the same game can be played with a hand resting on " +
-          "a supported handle rather than held in a fist. Both ship as Inno Setup " +
-          "installers, so a clinic installs them without touching a build pipeline.",
+          "Meteors and projectiles spawn continuously, and instantiating per " +
+          "spawn produces a GC spike at exactly the wrong moment: during wave " +
+          "escalation, when the player most needs a stable frame rate. A single " +
+          "generic pool serves every spawned object rather than a pool per " +
+          "prefab, so nothing is allocated mid-wave. " +
+          INPUT_NOTE,
       },
     ],
   },
@@ -339,6 +350,7 @@ export const projects: Project[] = [
     category: "source",
     playable: false,
     order: 4,
+    role: "Personal project: gameplay systems, audio and build.",
     tagline: "3D top-down survival shooter: NavMesh zombies, twin-stick movement, Wwise audio.",
     summary:
       "A 3D top-down survival shooter with NavMesh zombie pathfinding, " +
@@ -349,9 +361,8 @@ export const projects: Project[] = [
       "The public repository contains the game's own source, its Wwise " +
       "definitions and its scene files, but it does not build a playable copy: " +
       "the art is licensed Asset Store content and the baked NavMesh data is " +
-      "derived and far over GitHub's per-file size limit. The gameplay video " +
-      "below is the honest proof of the systems, and the repo is the proof of " +
-      "the code.",
+      "derived and far over GitHub's per-file size limit. The video is the proof " +
+      "of the systems, and the repo is the proof of the code.",
     repoUrl: "https://github.com/Nithinvincen5209/Zombie-Escape",
     media: {
       images: [],
@@ -360,6 +371,13 @@ export const projects: Project[] = [
         "Gameplay from the public repository's build: twin-stick movement and " +
         "aiming, NavMesh zombie pathfinding, and Wwise Events driven from C#.",
     },
+    features: [
+      "Twin-stick movement with independent 360-degree aiming",
+      "Raycast hit detection, so fast projectiles cannot tunnel through colliders",
+      "NavMesh zombie pathfinding over a baked navigation mesh",
+      "Central game-state manager owning objectives and win/loss conditions",
+      "Wwise Events, RTPCs and Switches driven from C# with Unity audio disabled",
+    ],
     tech: ["Unity 6000.0.31f1", "URP", "Wwise 2024.1.6", "NavMesh", "Raycasting", "C#"],
     stats: [
       { label: "C# scripts", value: "478" },
@@ -411,6 +429,7 @@ export const projects: Project[] = [
     category: "playable",
     playable: true,
     order: 5,
+    role: "Personal project: gameplay, audio and build.",
     tagline: "Rigidbody flight model with Wwise thruster audio, playable in browser.",
     summary:
       "An arcade flight game built on a Rigidbody flight model simulating " +
@@ -421,6 +440,12 @@ export const projects: Project[] = [
     itchEmbedId: "4070479",
     repoUrl: "https://github.com/Nithinvincen5209/UFO",
     media: { images: [] },
+    features: [
+      "Rigidbody flight model for gravity, thrust and rotation, tuned for arcade feel",
+      "Landing validation on descent speed and tilt angle, so failures read differently",
+      "Playing / Level Complete / Crashed state machine governing effects and audio",
+      "Wwise thruster audio driven by a real-time parameter from player input",
+    ],
     tech: ["Unity 6000.0.31f1", "Rigidbody", "Wwise 2024.1.6", "RTPC", "C#"],
     stats: [
       { label: "Playable", value: "In browser" },
@@ -463,13 +488,19 @@ export const projects: Project[] = [
     category: "playable",
     playable: true,
     order: 6,
-    tagline: "Playable in browser on itch.io.",
+    role: "Personal project: gameplay and build.",
+    tagline: "Tower-defence strategy game, playable in browser.",
     summary:
-      "A playable browser game published on itch.io. Includes source access " +
-      "and is built in Unity.",
+      "A tower-defence strategy game published as a browser build on itch.io, " +
+      "embedded on this page so it can be played without leaving the site.",
     itchUrl: "https://nitinvincent.itch.io/tower-tactics",
     itchEmbedId: "4072206",
     media: { images: [] },
+    features: [
+      "Tower-defence strategy loop",
+      "Full browser build published on itch.io",
+      "Click-to-load embed, so nothing is fetched until you play",
+    ],
     tech: ["Unity", "C#"],
     sections: [
       {
@@ -488,13 +519,19 @@ export const projects: Project[] = [
     category: "playable",
     playable: true,
     order: 7,
-    tagline: "Playable in browser on itch.io.",
+    role: "Personal project: gameplay and build.",
+    tagline: "Memory-matching puzzle game, playable in browser.",
     summary:
-      "A playable browser game published on itch.io. Memory-matching gameplay " +
-      "built in Unity.",
+      "A memory-matching puzzle game published as a browser build on itch.io. " +
+      "Card flip state, match resolution and board reset are handled in Unity.",
     itchUrl: "https://nitinvincent.itch.io/memory-match",
     itchEmbedId: "4069605",
     media: { images: [] },
+    features: [
+      "Memory-matching core loop with pair resolution",
+      "Card flip state and board reset handled in Unity",
+      "Full browser build published on itch.io",
+    ],
     tech: ["Unity", "C#"],
     sections: [
       {
@@ -512,12 +549,19 @@ export const projects: Project[] = [
     category: "playable",
     playable: true,
     order: 8,
-    tagline: "Playable in browser on itch.io.",
+    role: "Personal project: gameplay and build.",
+    tagline: "Arcade shooter, playable in browser.",
     summary:
-      "A playable browser shooter published on itch.io, built in Unity.",
+      "An arcade shooter published as a browser build on itch.io and embedded " +
+      "here, so it can be played without leaving the site.",
     itchUrl: "https://nitinvincent.itch.io/aero-timeline-shooter",
     itchEmbedId: "4081223",
     media: { images: [] },
+    features: [
+      "Arcade shooting loop",
+      "Full browser build published on itch.io",
+      "Click-to-load embed, so nothing is fetched until you play",
+    ],
     tech: ["Unity", "C#"],
     sections: [
       {
@@ -530,64 +574,24 @@ export const projects: Project[] = [
   },
 ];
 
-/** Grouping for the six measurement tools, shown on /work#measurement-tools. */
-export interface ClinicalTool {
-  name: string;
-  /** What the tool measures. */
-  measures: string;
-  /** true when the tool also has a no-measurement calibration variant. */
-  hasNonMeasurementVariant: boolean;
-  /** Size of the shipped installer, as built. */
-  installerSizeMb: number;
-}
-
-/**
- * The six measurement tools. Each ships as its own Inno Setup installer, with a
- * measured and a non-measurement variant where applicable.
- *
- * Verified against the installers in "C:\Users\nithi\Desktop\Inno Installation
- * files", which holds 10 `.iss` scripts and 10 built installers, 24.4-45.3 MB:
- * Block Strike, Ferris Wheel, Galaxy Flex, Lumber Dash, and these six. That is
- * where the "ten Windows applications" figure on the resume comes from.
- *
- * Count the `.iss` files rather than globbing installer names. An earlier
- * "nine" came from globbing `*Setup*.exe`, which missed Grip Non-Measure.exe
- * (no `_Setup` suffix) and so understated the total by one.
- *
- * NOTE: this array does NOT enumerate every shipped title. Ferris Wheel is a
- * fourth game that shipped (45.3 MB installer, CompanyName Remap, v1.0) but has
- * no surviving source project, so it gets no entry and no case study page. It is
- * named in the shipped counts and no gameplay detail is claimed for it. The
- * other three games each have a project entry above.
- */
-export const clinicalTools: ClinicalTool[] = [
-  {
-    name: "Grip Strength Measurement",
-    measures: "Grip strength",
-    hasNonMeasurementVariant: true,
-    installerSizeMb: 25.3,
-  },
-  {
-    name: "Pinch Strength Measurement",
-    measures: "Pinch strength",
-    hasNonMeasurementVariant: true,
-    installerSizeMb: 24.6,
-  },
-  {
-    name: "ROM Measurement",
-    measures: "Range of motion",
-    hasNonMeasurementVariant: true,
-    installerSizeMb: 29.7,
-  },
-];
-
 /** Links shown in the header / contact area. */
 export const profile = {
   name: "Nithin Vincent",
   role: "Unity Developer",
   tagline:
-  "Unity developer working on gameplay systems, real-time device integration " +
-  "and interactive audio.",
+    "Unity developer building gameplay systems, UI and interactive audio, " +
+    "from prototype through to a shipped Windows build.",
+  /**
+   * The hero paragraph. Derived from the downloadable resume so the two cannot
+   * drift: if this changes, `public/Nithin-Vincent-Unity-Developer-Resume.pdf`
+   * needs rebuilding to match.
+   */
+  summary:
+    "Unity developer with eight months of professional experience building " +
+    "gameplay systems end to end in Unity 6 and C#: procedural generation, " +
+    "physics, object pooling, UI and game-state management. Shipped four " +
+    "Windows games as installers for a rehabilitation-engineering client, with " +
+    "four more published and playable in a browser.",
   location: "Thrissur, Kerala, India",
   email: "nithinvincent371@gmail.com",
   github: "https://github.com/Nithinvincen5209",
@@ -595,6 +599,82 @@ export const profile = {
   itch: "https://nitinvincent.itch.io",
   resumePdf: "/Nithin-Vincent-Unity-Developer-Resume.pdf",
 } as const;
+
+/**
+ * Headline numbers. Every value here is checkable against the project pages or
+ * the internship certificate (06 Jan 2026 - 22 Sep 2026).
+ */
+export const highlights: { label: string; value: string }[] = [
+  { label: "games shipped as Windows builds", value: "4" },
+  { label: "playable in the browser", value: "4" },
+  { label: "public case studies", value: "3" },
+  { label: "months, Remap internship", value: "8" },
+];
+
+/**
+ * What I build, as capability cards on the home page.
+ *
+ * Written from the same source as the resume skills block, grouped by the job a
+ * reader is hiring for rather than by tool. Order puts the things a gameplay
+ * role screens for first.
+ */
+export const capabilities: { heading: string; body: string; items: string[] }[] = [
+  {
+    heading: "Gameplay systems",
+    body:
+      "Systems that hold up over a long session, not a demo that works once.",
+    items: [
+      "Procedural level generation",
+      "Scoring, combos and difficulty scaling",
+      "Object pooling",
+      "Game-state and session management",
+    ],
+  },
+  {
+    heading: "Physics, AI and 3D",
+    body:
+      "Movement and enemies that behave consistently frame to frame.",
+    items: [
+      "Rigidbody physics and landing validation",
+      "NavMesh pathfinding",
+      "Raycast hit detection",
+      "Colliders and trigger logic",
+    ],
+  },
+  {
+    heading: "UI and player feedback",
+    body:
+      "The layer between the system and the person using it.",
+    items: [
+      "Unity UI (Canvas) layouts",
+      "Animated gauges and live readouts",
+      "Combo and floating-text feedback",
+      "Tutorial and onboarding flows",
+    ],
+  },
+  {
+    heading: "Interactive audio",
+    body:
+      "Audio treated as a system, with an audio engineering diploma behind it.",
+    items: [
+      "Wwise Events, RTPCs and Switches",
+      "Real-time parameter modulation",
+      "Audio driven from C#",
+      "Unity audio engine disabled in favour of Wwise",
+    ],
+  },
+  {
+    heading: "Build and release",
+    body:
+      "A feature is not finished until someone else can install it.",
+    items: [
+      "Inno Setup installers",
+      "Windows packaging",
+      "Git and repository hygiene",
+      "Game design documents",
+    ],
+  },
+];
 
 /** Skill chips, grouped. Order is deliberate: most relevant first. */
 export const skillGroups: { heading: string; items: string[] }[] = [
@@ -623,18 +703,17 @@ export const skillGroups: { heading: string; items: string[] }[] = [
     ],
   },
   {
-    heading: "Hardware & Integration",
+    heading: "Input, UI & Build",
     items: [
-      "Serial-to-TCP bridging (pyserial, 115200 baud)",
-      "Threaded socket servers & listeners",
-      "IMU & wrist motion sensors",
-      "D-Handle controller coupler",
-      "Arcade button input",
+      "Unity UI (Canvas)",
+      "Serial-to-TCP bridging",
+      "Threaded socket servers",
+      "Inno Setup packaging",
     ],
   },
   {
     heading: "Tooling",
-    items: ["Git", "Inno Setup packaging", "Visual Studio 2022", "JavaScript", "Python"],
+    items: ["Git", "Visual Studio 2022", "Python", "JavaScript"],
   },
 ];
 
@@ -646,9 +725,7 @@ export const skillGroups: { heading: string; items: string[] }[] = [
 export const playableProjects = projects.filter((p) => p.playable);
 
 /** Projects shown with video + gallery, i.e. everything not playable. */
-export const nonPlayableProjects = projects.filter((p) => !p.playable);
-
-export const rehabProjects = projects.filter((p) => p.category === "rehab");
+export const shippedProjects = projects.filter((p) => !p.playable);
 
 export function getProject(slug: string): Project | undefined {
   return projects.find((p) => p.slug === slug);
